@@ -19,6 +19,8 @@ The environment will consist of the following resources:
 * Virtual Machines for a Jumpbox and DevOps (either Azure DevOps Build Agent or a GitHub Hosted Runner)
 * Virtual Network with Network Security Groups
 
+(Architecture Diagram - In Progress)
+
 ## How To Use This Repository
 
 * The repository can be cloned locally or within Azure Cloud Shell.
