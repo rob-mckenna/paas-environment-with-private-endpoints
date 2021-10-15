@@ -1,0 +1,209 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "apimName": {
+            "type": "string"
+        },
+        "organizationName": {
+            "type": "string"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "appInsightsOption": {
+            "type": "bool"
+        },
+        "appInsightsName": {
+            "type": "string"
+        },
+        "appInsightsInstrumentationKey": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "int"
+        },
+        "identity": {
+            "type": "object"
+        },
+        "virtualNetworkType": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "virtualNetworkResourceGroup": {
+            "type": "string"
+        },
+        "tripleDES": {
+            "type": "bool"
+        },
+        "http2": {
+            "type": "bool"
+        },
+        "clientTls11": {
+            "type": "bool"
+        },
+        "clientTls10": {
+            "type": "bool"
+        },
+        "clientSsl30": {
+            "type": "bool"
+        },
+        "backendTls11": {
+            "type": "bool"
+        },
+        "backendTls10": {
+            "type": "bool"
+        },
+        "backendSsl30": {
+            "type": "bool"
+        },
+        "tagsByResource": {
+            "type": "object"
+        },
+        "appInsightsObject": {
+            "type": "object"
+        },
+        "vnet": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
+        "applicationInsightsResourceId": "[resourceId('microsoft.insights/components',parameters('appInsightsName'))]",
+        "apimPublicIpAddressName": "[concat(parameters('apimName'),'-pip')]",
+        "customPropertiesNonConsumption": {
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Ciphers.TripleDes168": "[parameters('tripleDES')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "[parameters('clientTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "[parameters('clientTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Ssl30": "[parameters('clientSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "[parameters('backendTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "[parameters('backendTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "[parameters('backendSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "[parameters('http2')]"
+        },
+        "customPropertiesConsumption": {
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "[parameters('clientTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "[parameters('clientTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "[parameters('backendTls11')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "[parameters('backendTls10')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "[parameters('backendSsl30')]",
+            "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "[parameters('http2')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('apimPublicIpAddressName')]",
+            "location": "eastus",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "3",
+                "1",
+                "2"
+            ],
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('apimPublicIpAddressName')]",
+                    "fqdn": "[concat(variables('apimPublicIpAddressName'),'.eastus.cloudapp.azure.com')]"
+                },
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2021-01-01-preview",
+            "name": "[parameters('apimName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": "[parameters('identity')]",
+            "dependsOn":[
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('apimPublicIpAddressName'))]"
+            ],
+            "tags": "[parameters('tagsByResource')]",
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('organizationName')]",
+                "virtualNetworkType": "[parameters('virtualNetworkType')]",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[variables('subnetResourceId')]"
+                },
+                "publicIpAddressId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('apimPublicIpAddressName'))]",
+                "customProperties": "[if(equals(parameters('tier'), 'Consumption'), variables('customPropertiesConsumption'), variables('customPropertiesNonConsumption'))]"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('appInsightsOption')]",
+                    "type": "loggers",
+                    "apiVersion": "2021-01-01-preview",
+                    "name": "[parameters('appInsightsName')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "[variables('applicationInsightsResourceId')]",
+                        "credentials": {
+                            "instrumentationKey": "[parameters('appInsightsInstrumentationKey')]"
+                        }
+                    }
+                },
+                {
+                    "condition": "[parameters('appInsightsOption')]",
+                    "type": "diagnostics",
+                    "apiVersion": "2021-01-01-preview",
+                    "name": "applicationinsights",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]",
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('appInsightsName'))]"
+                    ],
+                    "properties": {
+                        "loggerId": "[concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('appInsightsName'))]",
+                        "alwaysLog": "allErrors",
+                        "sampling": {
+                            "percentage": 100,
+                            "samplingType": "fixed"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "subnetResourceId": {
+            "type": "string",
+            "value": "[variables('subnetResourceId')]"
+        },
+        "virtualNetworkType": {
+            "type": "string",
+            "value": "[parameters('virtualNetworkType')]"
+        },
+        "virtualNetworkConfiguration": {
+            "type": "object",
+            "value": "[reference(parameters('apimName'))]"
+        }
+    }
+}

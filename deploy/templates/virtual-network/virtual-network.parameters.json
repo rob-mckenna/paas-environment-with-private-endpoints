@@ -1,0 +1,70 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "eastus"
+        },
+        "extendedLocation": {
+            "value": {}
+        },
+        "virtualNetworkName": {
+            "value": "<VIRTUAL_NETWORK_NAME>"
+        },
+        "resourceGroup": {
+            "value": "<RESOURCE_GROUP>"
+        },
+        "addressSpaces": {
+            "value": [
+                "10.2.0.0/16"
+            ]
+        },
+        "ipv6Enabled": {
+            "value": false
+        },
+        "subnetCount": {
+            "value": 1
+        },
+        "subnet0_name": {
+            "value": "default"
+        },
+        "subnet0_addressRange": {
+            "value": "10.2.0.0/24"
+        },
+        "ddosProtectionPlanEnabled": {
+            "value": false
+        },
+        "firewallEnabled": {
+            "value": false
+        },
+        "bastionEnabled": {
+            "value": true
+        },
+        "bastionName": {
+            "value": "<BASTION_NAME>"
+        },
+        "publicIpAddressForBastionName": {
+            "value": "<PIP_FOR_BASTION_NAME>"
+        },
+        "bastionSubnetAddressSpace": {
+            "value": "10.2.1.0/26"
+        },
+        "appSvcVnetIntegrationSubnetAddressSpace": {
+            "value": "10.2.2.0/26"
+        },
+        "apiMgmtSubnetAddressSpace": {
+            "value": "10.2.3.0/26"
+        },
+        "appGatewaySubnetAddressSpace": {
+            "value": "10.2.4.0/24"
+        },
+        "apimNsgName": {
+            "value": "<APIM_NSG_NAME>"
+        },
+        "tags": {
+            "value": {
+                "": ""
+            }
+        }
+    }
+}
