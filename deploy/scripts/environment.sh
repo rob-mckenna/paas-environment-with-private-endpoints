@@ -63,7 +63,7 @@ az deployment group create \
     --template-file ../templates/virtual-network/virtual-network.deploy.json \
     --parameters @../templates/virtual-network/virtual-network.parameters.json \
     --parameters virtualNetworkName=$virtualNetworkName location=$location resourceGroup=$resourceGroupName \
-        bastionName="$environment-bastion" publicIpAddressForBastionName="$environment-bastion-pip" \
+        bastionName="$environment-bastion" publicIpAddressForBastionName="$environment-bastion-pip" apimNsgName="apim-nsg" \
         tags=$tags
 
 echo "Virtual Network with Azure Bastion - START"
@@ -71,11 +71,11 @@ echo "Virtual Network with Azure Bastion - START"
 echo "Virtual Machine for Jumpbox - START"
 virtualMachineName="$environment-vm01"
 virtualMachineComputerName=${virtualMachineName:0:15}
-networkInterfaceName="$environment-nic"
+networkInterfaceName="$environment-jumpbox-nic"
 networkInterfaceIpConfigName="ipconfig1"
 az deployment group create \
     --resource-group $resourceGroupName \
-    --name virtual-machine \
+    --name virtual-machine-jumpbox \
     --template-file ../templates/virtual-machine/virtual-machine.deploy.json \
     --parameters @../templates/virtual-machine/virtual-machine.parameters.json \
     --parameters virtualMachineName=$virtualMachineName virtualMachineRG=$resourceGroupName location=$location \
@@ -87,12 +87,12 @@ echo "Virtual Machine for Jumpbox - END"
 
 echo "Virtual Machine for DevOps - START"
 virtualMachineName="$environment-devops-vm01"
-virtualMachineComputerName="${virtualMachineName:0:8}-devops"
+virtualMachineComputerName="${virtualMachineName:0:15}"
 networkInterfaceName="$environment-devops-nic"
 networkInterfaceIpConfigName="ipconfig2"
 az deployment group create \
     --resource-group $resourceGroupName \
-    --name virtual-machine \
+    --name virtual-machine-devops \
     --template-file ../templates/virtual-machine/virtual-machine.deploy.json \
     --parameters @../templates/virtual-machine/virtual-machine.parameters.json \
     --parameters virtualMachineName=$virtualMachineName virtualMachineRG=$resourceGroupName location=$location \
@@ -124,7 +124,7 @@ az deployment group create \
     --parameters @../templates/storage-account-with-private-endpoint/storage-account-with-private-endpoint.parameters.json \
     --parameters storageAccountName=$storageAccountName location=$location tags=$tags \
         virtualNetworkName=$virtualNetworkName subnetName=$subnetName virtualNetworkResourceGroup=$resourceGroupName \
-        privateEndpointName="$environment-prvendpnt04"
+        privateEndpointName="$environment-prvendpntstg"
 
 echo "Storage Account with Private Endpoint - END"
 
@@ -145,12 +145,14 @@ echo "Service Bus - END"
 
 echo "Private Endpoint for Service Bus namespace - START"
 # Service Bus namespace and queue(s)
+networkInterfaceName="$environment-svcbus-nic"
+networkInterfaceIpConfigName="ipconfig3"
 az deployment group create \
     --resource-group $resourceGroupName \
     --name private-endpoint-service-bus \
     --template-file ../templates/private-endpoint/private-endpoint.deploy.json \
     --parameters @../templates/private-endpoint/private-endpoint.parameters.json \
-    --parameters privateEndpointName="$environment-prvendpnt01" resourceGroupName=$resourceGroupName location=$location tags=$tags \
+    --parameters privateEndpointName="$environment-prvendpntsvcbus" resourceGroupName=$resourceGroupName location=$location tags=$tags \
         privateLinkResourceType="Microsoft.ServiceBus/namespaces" privateLinkResourceName="$environment-nmspc" targetSubResource="['namespace']" \
         virtualNetworkName=$virtualNetworkName subnetName=$subnetName virtualNetworkResourceGroup=$resourceGroupName \
         networkInterfaceName=$networkInterfaceName networkInterfaceIpConfigName=$networkInterfaceIpConfigName \
@@ -169,7 +171,7 @@ az deployment group create \
         subscriptionId=$currentSubscriptionId \
         hostingPlanName="$environment-appsvcplan" \
         serverFarmResourceGroup=$resourceGroupName \
-        virtualNetworkName=$virtualNetworkName subnetName="app-svc-vnet-integ-subnet"
+        virtualNetworkName=$virtualNetworkName subnetName="appSvcVnetIntegSubnet"
 
 echo "App Service - END"
 
@@ -180,11 +182,13 @@ az deployment group create \
     --name azure-function \
     --template-file ../templates/azure-function/azure-function.deploy.json \
     --parameters @../templates/azure-function/azure-function.parameters.json \
-    --parameters name="$environment-func01" location=$location tags=$tags \
+    --parameters name="$functionAppName" location=$location tags=$tags \
         subscriptionId=$currentSubscriptionId \
         hostingPlanName="$environment-appsvcplan" \
         serverFarmResourceGroup=$resourceGroupName \
-        storageAccountName=$functionStorageAccountName
+        storageAccountName=$functionStorageAccountName \
+        virtualNetworkName=$virtualNetworkName subnetName=$subnetName virtualNetworkResourceGroup=$resourceGroupName \
+        privateEndpointName="$environment-funcprvendpntstg"
 
 echo "Azure Function App - END"
 
@@ -199,7 +203,7 @@ az deployment group create \
     --parameters apimName=$apimName location=$location tagsByResource=$tags \
         organizationName=$organizationName adminEmail=$adminEmail \
         appInsightsName=$appInsightsName appInsightsInstrumentationKey=$appInsightsInstrumentationKey \
-        virtualNetworkName=$virtualNetworkName subnetName='apim-subnet' virtualNetworkResourceGroup=$resourceGroupName
+        virtualNetworkName=$virtualNetworkName subnetName="apimSubnet" virtualNetworkResourceGroup=$resourceGroupName
 
 echo "API Management - END"
 

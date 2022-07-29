@@ -14,6 +14,9 @@
         "hostingPlanName": {
             "value": "<APP_SERVICE_PLAN_NAME>"
         },
+        "appInsightsInstrumentationKey": {
+            "value": "<APP_INSIGHT_INSTRUMENTATION_KEY>"
+        },
         "serverFarmResourceGroup": {
             "value": "<RESOURCE_GROUP>"
         },

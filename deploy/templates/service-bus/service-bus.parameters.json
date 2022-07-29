@@ -6,7 +6,7 @@
         "value": "<SERVICE_BUS_NAMESPACE_NAME>"
       },
       "serviceBusSku": {
-        "value": "<SERVICE_BUS_SKU>"
+        "value": "Standard"
       },
       "location": {
         "value": "<LOCATION>"

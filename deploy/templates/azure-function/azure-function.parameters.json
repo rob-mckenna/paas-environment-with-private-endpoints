@@ -23,6 +23,69 @@
         "storageAccountName": {
             "value": "<FUNCTION_APP_STORAGE_ACCNT>"
         },
+        "accountType": {
+            "value": "Standard_RAGRS"
+        },
+        "kind": {
+            "value": "StorageV2"
+        },
+        "accessTier": {
+            "value": "Hot"
+        },
+        "minimumTlsVersion": {
+            "value": "TLS1_2"
+        },
+        "supportsHttpsTrafficOnly": {
+            "value": true
+        },
+        "allowBlobPublicAccess": {
+            "value": false
+        },
+        "allowSharedKeyAccess": {
+            "value": true
+        },
+        "defaultOAuth": {
+            "value": false
+        },
+        "networkAclsBypass": {
+            "value": "AzureServices"
+        },
+        "networkAclsDefaultAction": {
+            "value": "Deny"
+        },
+        "isContainerRestoreEnabled": {
+            "value": false
+        },
+        "isBlobSoftDeleteEnabled": {
+            "value": true
+        },
+        "blobSoftDeleteRetentionDays": {
+            "value": 7
+        },
+        "isContainerSoftDeleteEnabled": {
+            "value": true
+        },
+        "containerSoftDeleteRetentionDays": {
+            "value": 7
+        },
+        "changeFeed": {
+            "value": false
+        },
+        "isVersioningEnabled": {
+            "value": false
+        },
+        "appInsightsInstrumentationKey": {
+            "value": "<APP_INSIGHT_INSTRUMENTATION_KEY>"
+        },
+        "virtualNetworkName":{
+            "value": "<VIRTUAL_NETWORK_NAME>"
+        },
+        "subnetName":{
+            "value": "<SUBNET_NAME>"
+        },
+        "virtualNetworkResourceGroup": {
+            "value": "<VNET_RESOURCE_GROUP_NAME>"
+        },
         "use32BitWorkerProcess": {
             "value": true
         },

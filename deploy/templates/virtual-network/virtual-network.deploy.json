@@ -56,6 +56,9 @@
         "appGatewaySubnetAddressSpace": {
             "type": "string"
         },
+        "applicationSubnetAddressSpace": {
+            "type": "string"
+        },  
         "apimNsgName": {
             "type": "string"
         },
@@ -68,7 +71,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[parameters('apimNsgName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "properties": {
                 "securityRules": [
@@ -304,7 +307,7 @@
         {
             "name": "[parameters('virtualNetworkName')]",
             "type": "Microsoft.Network/VirtualNetworks",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "extendedLocation": "[if(empty(parameters('extendedLocation')), json('null'), parameters('extendedLocation'))]",
             "dependsOn": [
@@ -313,26 +316,9 @@
             "tags": "[parameters('tags')]",
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [
-                        "10.2.0.0/16"
-                    ]
+                    "addressPrefixes": "[parameters('addressSpaces')]"
                 },
                 "subnets": [
-                    {
-                        "name": "default",
-                        "properties": {
-                            "addressPrefix": "10.2.0.0/24",
-                            "privateEndpointNetworkPolicies": "Disabled",
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.ServiceBus",
-                                    "locations": [
-                                        "[parameters('location')]"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
                     {
                         "name": "AzureBastionSubnet",
                         "properties": {
@@ -340,7 +326,7 @@
                         }
                     },
                     {
-                        "name": "app-svc-vnet-integ-subnet",
+                        "name": "appSvcVnetIntegSubnet",
                         "properties": {
                             "addressPrefix": "[parameters('appSvcVnetIntegrationSubnetAddressSpace')]",
                             "delegations": [
@@ -354,7 +340,7 @@
                         }
                     },
                     {
-                        "name": "apim-subnet",
+                        "name": "apimSubnet",
                         "properties": {
                             "addressPrefix": "[parameters('apiMgmtSubnetAddressSpace')]",
                             "networkSecurityGroup": {
@@ -393,6 +379,21 @@
                             "privateEndpointNetworkPolicies": "Enabled",
                             "privateLinkServiceNetworkPolicies": "Enabled"
                         }
+                    },
+                                        {
+                        "name": "applicationSubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('applicationSubnetAddressSpace')]",
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.ServiceBus",
+                                    "locations": [
+                                        "[parameters('location')]"
+                                    ]
+                                }
+                            ]
+                        }
                     }
                 ],
                 "enableDdosProtection": "[parameters('ddosProtectionPlanEnabled')]"
@@ -400,7 +401,7 @@
         },
         {
             "type": "Microsoft.Network/publicIpAddresses",
-            "apiVersion": "2020-08-01",
+            "apiVersion": "2021-08-01",
             "name": "[parameters('publicIpAddressForBastionName')]",
             "location": "[parameters('location')]",
             "sku": {
@@ -412,7 +413,7 @@
         },
         {
             "type": "Microsoft.Network/bastionHosts",
-            "apiVersion": "2019-04-01",
+            "apiVersion": "2021-08-01",
             "name": "[parameters('bastionName')]",
             "location": "[parameters('location')]",
             "dependsOn": [

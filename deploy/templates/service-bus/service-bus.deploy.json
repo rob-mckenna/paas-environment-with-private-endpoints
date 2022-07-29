@@ -89,8 +89,8 @@
         },
         {
           "type": "Microsoft.ServiceBus/namespaces/networkRuleSets",
-          "apiVersion": "2021-01-01-preview",
-          "name": "[concat(parameters('serviceBusNamespaceName'),'/',parameters('subnetName'))]",
+          "apiVersion": "2021-06-01-preview",
+          "name": "[concat(parameters('serviceBusNamespaceName'),'/default')]",
           "location": "[parameters('location')]",
           "dependsOn": [
             "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
